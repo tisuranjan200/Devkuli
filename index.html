@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome to MediaShare{% endblock %}
+
+{% block content %}
+<div class="text-center py-5" style="background: linear-gradient(135deg, #f8ffae 0%, #43c6ac 100%); border-radius: 20px; box-shadow: 0 4px 16px rgba(67,198,172,0.2);">
+    <h1 class="display-4 mb-4" style="color: #007bff; text-shadow: 2px 2px 8px #fff;">Welcome to Devkuli</h1>
+    <p class="lead mb-4" style="color: #333;">Share your photos and videos with the world</p>
+    
+    {% if not current_user.is_authenticated %}
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+            <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg px-4 gap-3">Get Started</a>
+            <a href="{{ url_for('login') }}" class="btn btn-outline-secondary btn-lg px-4">Login</a>
+        </div>
+    {% endif %}
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); border-radius: 10px;">
+                <i class="fas fa-images fa-3x mb-3 text-primary"></i>
+                <h3 class="card-title">Photo Gallery</h3>
+                <p class="card-text">Upload and share your favorite photos with the community. Browse through beautiful images from other users.</p>
+                <a href="{{ url_for('gallery') }}" class="btn btn-outline-primary">View Gallery</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center" style="background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); border-radius: 10px;">
+                <i class="fas fa-video fa-3x mb-3 text-primary"></i>
+                <h3 class="card-title">Video Sharing</h3>
+                <p class="card-text">Share your videos with the world. Upload and watch videos from our community members.</p>
+                <a href="{{ url_for('videos') }}" class="btn btn-outline-primary">Watch Videos</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center" style="background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%); border-radius: 10px;">
+                <i class="fas fa-user-circle fa-3x mb-3 text-primary"></i>
+                <h3 class="card-title">User Profiles</h3>
+                <p class="card-text">Create your own profile, manage your uploads, and connect with other media enthusiasts.</p>
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary">View Profile</a>
+                {% else %}
+                    <a href="{{ url_for('register') }}" class="btn btn-outline-primary">Create Profile</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- All Uploaded Images Section -->
+<div class="container mt-5">
+    <h2 class="text-center mb-4" style="color: #007bff;">All Uploaded Images</h2>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+        {% for image in all_images %}
+        <div class="col">
+            <div class="card h-100">
+                <img src="{{ url_for('static', filename='uploads/images/' + image.filename) }}" class="card-img-top" alt="Uploaded image" loading="lazy" style="height: 180px; object-fit: cover; border-radius: 10px 10px 0 0;">
+                <div class="card-body">
+                    <p class="card-text mb-0"><small class="text-muted">Uploaded by {{ image.author.username }}</small></p>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12 text-center">
+            <p class="lead">No images have been uploaded yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+<style>
+body {
+    background: linear-gradient(120deg, #f6d365 0%, #fda085 100%);
+    min-height: 100vh;
+}
+</style> 

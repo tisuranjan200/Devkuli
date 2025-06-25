@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Video - MediaShare{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title text-center mb-4">Upload Video</h2>
+                <form method="POST" action="{{ url_for('upload_video') }}" enctype="multipart/form-data" class="dropzone" id="videoUpload">
+                    <div class="mb-3">
+                        <label for="video" class="form-label">Choose a video</label>
+                        <input type="file" class="form-control" id="video" name="video" accept="video/*" required>
+                        <div class="form-text">Supported formats: MP4, WebM, OGG. Max size: 16MB</div>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Upload Video</button>
+                    </div>
+                </form>
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('videos') }}" class="btn btn-outline-secondary">View Videos</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.dropzone {
+    border: 2px dashed #ccc;
+    border-radius: 4px;
+    padding: 20px;
+    text-align: center;
+    background: #f8f9fa;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+}
+
+.dropzone:hover {
+    border-color: #0d6efd;
+}
+
+.dropzone.dragover {
+    border-color: #0d6efd;
+    background: #e9ecef;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dropzone = document.getElementById('videoUpload');
+    const fileInput = document.getElementById('video');
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropzone.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropzone.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropzone.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight(e) {
+        dropzone.classList.add('dragover');
+    }
+
+    function unhighlight(e) {
+        dropzone.classList.remove('dragover');
+    }
+
+    dropzone.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        fileInput.files = files;
+    }
+});
+</script>
+{% endblock %} 

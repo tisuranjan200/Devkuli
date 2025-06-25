@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - MediaShare{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center mb-4">Welcome, {{ current_user.username }}!</h1>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title">Quick Upload</h3>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('upload_image') }}" class="btn btn-primary">
+                            <i class="fas fa-image"></i> Upload Image
+                        </a>
+                        <a href="{{ url_for('upload_video') }}" class="btn btn-primary">
+                            <i class="fas fa-video"></i> Upload Video
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title">Your Stats</h3>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Images Uploaded
+                            <span class="badge bg-primary rounded-pill">{{ current_user.images|length }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Videos Uploaded
+                            <span class="badge bg-primary rounded-pill">{{ current_user.videos|length }}</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-3">Your Recent Uploads</h2>
+            
+            <ul class="nav nav-tabs mb-3" id="uploadTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="images-tab" data-bs-toggle="tab" data-bs-target="#images" type="button" role="tab">
+                        Images ({{ current_user.images|length }})
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="videos-tab" data-bs-toggle="tab" data-bs-target="#videos" type="button" role="tab">
+                        Videos ({{ current_user.videos|length }})
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="uploadTabsContent">
+                <div class="tab-pane fade show active" id="images" role="tabpanel">
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                        {% for image in current_user.images|sort(attribute='upload_date', reverse=true) %}
+                            <div class="col">
+                                <div class="card h-100">
+                                    <a href="#" data-bs-toggle="modal" data-bs-target="#imageModal" data-img-url="{{ url_for('static', filename='uploads/images/' + image.filename) }}">
+                                        <img src="{{ url_for('static', filename='uploads/images/' + image.filename) }}" 
+                                             class="card-img-top" 
+                                             alt="Your uploaded image"
+                                             loading="lazy">
+                                    </a>
+                                    <div class="card-body">
+                                        <p class="card-text">
+                                            <small class="text-muted">
+                                                Uploaded on {{ image.upload_date.strftime('%Y-%m-%d %H:%M') }}
+                                            </small>
+                                        </p>
+                                        <form method="POST" action="{{ url_for('delete_image', image_id=image.id) }}" onsubmit="return confirm('Are you sure you want to delete this image?');">
+                                            <button type="submit" class="btn btn-danger btn-sm mt-2">Delete</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="col-12 text-center">
+                                <p class="lead">You haven't uploaded any images yet.</p>
+                                <a href="{{ url_for('upload_image') }}" class="btn btn-primary">Upload Your First Image</a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="videos" role="tabpanel">
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                        {% for video in current_user.videos|sort(attribute='upload_date', reverse=true) %}
+                            <div class="col">
+                                <div class="card h-100">
+                                    <div class="video-container">
+                                        <video class="card-img-top" controls>
+                                            <source src="{{ url_for('static', filename='uploads/videos/' + video.filename) }}" type="video/mp4">
+                                            Your browser does not support the video tag.
+                                        </video>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="card-text">
+                                            <small class="text-muted">
+                                                Uploaded on {{ video.upload_date.strftime('%Y-%m-%d %H:%M') }}
+                                            </small>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="col-12 text-center">
+                                <p class="lead">You haven't uploaded any videos yet.</p>
+                                <a href="{{ url_for('upload_video') }}" class="btn btn-primary">Upload Your First Video</a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for viewing image -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="imageModalLabel">View Image</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center">
+        <img id="modalImage" src="" alt="Large view" class="img-fluid rounded">
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var imageModal = document.getElementById('imageModal');
+    var modalImage = document.getElementById('modalImage');
+    imageModal.addEventListener('show.bs.modal', function (event) {
+        var trigger = event.relatedTarget;
+        var imgUrl = trigger.getAttribute('data-img-url');
+        modalImage.src = imgUrl;
+    });
+});
+</script>
+
+<style>
+.card-img-top {
+    height: 200px;
+    object-fit: cover;
+}
+
+.video-container {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+    background: #000;
+}
+
+.video-container video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.card {
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.nav-tabs .nav-link {
+    color: #495057;
+}
+
+.nav-tabs .nav-link.active {
+    color: #0d6efd;
+    font-weight: bold;
+}
+</style>
+{% endblock %} 
