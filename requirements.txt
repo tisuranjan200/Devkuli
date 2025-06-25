@@ -3,5 +3,6 @@ gunicorn
 flask_bootstrap
 Flask==2.2.5
 Flask-SQLAlchemy==2.5.1
+Flask-Login==0.6.3
 
 
